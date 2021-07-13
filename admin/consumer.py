@@ -1,4 +1,5 @@
-import pika 
+from main.main import Product
+import pika , json
 
 params = pika.URLParameters("amqps://bmlulnym:cO8LvzOx-aitUt-8R9gx5uKYkxfjJ4sG@snake.rmq2.cloudamqp.com/bmlulnym")
 
@@ -10,7 +11,12 @@ channel.queue_declare(queue='admin')
 
 def callback(ch, method, properties, body):
     print('Received in admin')
-    print(body)
+    data = json.loads(body)
+    print(data)
+    product = Product.objects.get(id=id)
+    product.likes = product.likes + 1
+    product.save()
+    print("Product likes Increased")
 
 channel.basic_consume(queue='admin', on_message_callback=callback)
 

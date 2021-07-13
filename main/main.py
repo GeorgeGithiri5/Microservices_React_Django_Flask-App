@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import request
+from producer import publish
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/main'
@@ -33,7 +35,22 @@ def index():
 
 @app.route('/api/products/<int:id>/like', method=['POST'])
 def like(id):
-    re
+    req = request.get('http://localhost:8000/api/user')
+    json = req.json()
+    
+    try:
+        productUser = ProductUser(user_id=json['id'], product_id = id)
+        db.session.add(productUser)
+        db.session.commit()
+        
+        publish('product_liked', id)
+    except:
+        abort(400, "You already liked this product")
+        
+    
+    return jsonify({
+        'message':'Success'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
